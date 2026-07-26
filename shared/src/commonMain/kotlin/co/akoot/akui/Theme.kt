@@ -1,7 +1,10 @@
 package co.akoot.akui
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
@@ -11,7 +14,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -54,85 +60,9 @@ data class Theme(
     val buttonWarningText: Color =   primary,
     val buttonPaddingVertical: Dp = 12.dp,
     val buttonPaddingHorizontal: Dp = 24.dp,
-    val buttonMaxElevation: Double = 12.0,
+    val buttonMaxElevation: Double = 4.0,
     val buttonCornerRadius: Dp = 24.dp,
 ) {
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun CustomButton(
-        onClick: () -> Unit,
-        corner: Dp = buttonCornerRadius,
-        modifier: Modifier = Modifier,
-        containerColor: Color = button,
-        contentColor: Color = buttonText,
-        disabledContainerColor: Color = button.copy(0.5f),
-        disabledContentColor: Color = buttonText.copy(0.5f),
-        maxElevation: Double = buttonMaxElevation,
-        border: BorderStroke? = null,
-        contentPadding: PaddingValues = PaddingValues(buttonPaddingHorizontal, buttonPaddingVertical),
-        interactionSource: MutableInteractionSource? = null,
-        content:  @Composable (RowScope.() -> Unit)
-    ) = androidx.compose.material3.Button(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(corner),
-        colors = ButtonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = disabledContainerColor,
-            disabledContentColor = disabledContentColor
-        ),
-        contentPadding = contentPadding,
-        border = border,
-        elevation = ButtonDefaults.buttonElevation((maxElevation / 2).dp, 0.dp, maxElevation.dp, maxElevation.dp, 0.dp),
-        content = content,
-        interactionSource = interactionSource
-    )
-
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    @Composable
-    fun CustomIconButton(
-        onClick: () -> Unit,
-        corner: Dp = buttonCornerRadius,
-        modifier: Modifier = Modifier,
-        containerColor: Color = button,
-        contentColor: Color = buttonText,
-        disabledContainerColor: Color = button.copy(0.5f),
-        disabledContentColor: Color = buttonText.copy(0.5f),
-        contentPadding: PaddingValues = PaddingValues(buttonPaddingHorizontal, buttonPaddingVertical),
-        interactionSource: MutableInteractionSource? = null,
-        content:  @Composable () -> Unit
-    ) = androidx.compose.material3.IconButton(
-        onClick = onClick,
-        modifier = modifier.padding(contentPadding),
-        shape = RoundedCornerShape(corner),
-        colors = IconButtonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = disabledContainerColor,
-            disabledContentColor = disabledContentColor
-        ),
-        interactionSource = interactionSource,
-        content = content
-    )
-
-    @Composable
-    fun Button(
-        context: Context = Context.PRIMARY,
-        onClick: () -> Unit,
-        paddingVertical: Dp = buttonPaddingVertical,
-        paddingHorizontal: Dp = buttonPaddingHorizontal,
-        interactionSource: MutableInteractionSource? = null,
-        content: @Composable (RowScope.() -> Unit)
-    ) = CustomButton(
-        onClick = onClick,
-        containerColor = containerColor(context),
-        contentColor = contentColor(context),
-        content = content,
-        contentPadding = PaddingValues(paddingHorizontal, paddingVertical),
-        interactionSource = interactionSource
-    )
-
     fun containerColor(context: Context): Color = when(context) {
         Context.PRIMARY -> button
         Context.SECONDARY -> buttonSecondary
@@ -153,20 +83,137 @@ data class Theme(
         Context.QUOTE -> buttonQuoteText
     }
 
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun CustomButton(
+        onClick: () -> Unit,
+        corner: Dp = buttonCornerRadius,
+        modifier: Modifier = Modifier,
+        containerColor: Color = button,
+        contentColor: Color = buttonText,
+        containerColorHover: Color = button,
+        contentColorHover: Color = buttonText,
+        disabledContainerColor: Color = button.copy(0.5f),
+        disabledContentColor: Color = buttonText.copy(0.5f),
+        maxElevation: Double = buttonMaxElevation,
+        border: BorderStroke? = null,
+        contentPadding: PaddingValues = PaddingValues(buttonPaddingHorizontal, buttonPaddingVertical),
+        content:  @Composable (RowScope.() -> Unit)
+    ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val hover by interactionSource.collectIsHoveredAsState()
+        val containerColor by animateColorAsState(
+            targetValue = if (hover) containerColorHover else containerColor,
+        )
+        val contentColor by animateColorAsState(
+            targetValue = if (hover) contentColorHover else contentColor,
+        )
+        androidx.compose.material3.Button(
+            onClick = onClick,
+            modifier = modifier,
+            shape = RoundedCornerShape(corner),
+            colors = ButtonColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+                disabledContainerColor = disabledContainerColor,
+                disabledContentColor = disabledContentColor
+            ),
+            contentPadding = contentPadding,
+            border = border,
+            elevation = ButtonDefaults.buttonElevation(
+                (maxElevation / 2).dp,
+                0.dp,
+                maxElevation.dp,
+                maxElevation.dp,
+                0.dp
+            ),
+            content = content,
+            interactionSource = interactionSource
+        )
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    fun CustomIconButton(
+        onClick: () -> Unit,
+        corner: Dp = buttonCornerRadius,
+        modifier: Modifier = Modifier,
+        containerColor: Color = button,
+        contentColor: Color = buttonText,
+        containerColorHover: Color = button,
+        contentColorHover: Color = buttonText,
+        disabledContainerColor: Color = button.copy(0.5f),
+        disabledContentColor: Color = buttonText.copy(0.5f),
+        contentPadding: PaddingValues = PaddingValues(buttonPaddingHorizontal, buttonPaddingVertical),
+        rotate: Boolean = true,
+        content:  @Composable () -> Unit
+    ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val hover by interactionSource.collectIsHoveredAsState()
+        val containerColor by animateColorAsState(
+            targetValue = if (hover) containerColorHover else containerColor,
+        )
+        val contentColor by animateColorAsState(
+            targetValue = if (hover) contentColorHover else contentColor,
+        )
+        val rotation by animateFloatAsState(
+            targetValue = if (rotate && hover) 360f else 0f,
+        )
+        androidx.compose.material3.IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .padding(contentPadding)
+            .rotate(rotation)
+            ,
+        shape = RoundedCornerShape(corner),
+        colors = IconButtonColors(
+            containerColor = containerColor,
+            contentColor = contentColor,
+            disabledContainerColor = disabledContainerColor,
+            disabledContentColor = disabledContentColor
+        ),
+        interactionSource = interactionSource,
+        content = content
+    )
+        }
+
+    @Composable
+    fun Button(
+        context: Context = Context.PRIMARY,
+        inverted: Boolean = true,
+        paddingVertical: Dp = buttonPaddingVertical,
+        paddingHorizontal: Dp = buttonPaddingHorizontal,
+        elevation: Double = buttonMaxElevation,
+        onClick: () -> Unit,
+        content: @Composable (RowScope.() -> Unit)
+    ) = CustomButton(
+        onClick = onClick,
+        containerColor = if(inverted) button else containerColor(context),
+        contentColor = if(inverted) buttonText else contentColor(context),
+        containerColorHover = if(inverted) containerColor(context) else button,
+        contentColorHover = if(inverted) contentColor(context) else buttonText,
+        content = content,
+        contentPadding = PaddingValues(paddingHorizontal, paddingVertical),
+        maxElevation = elevation
+    )
+
     @Composable
     fun IconButton(
         context: Context = Context.PRIMARY,
-        onClick: () -> Unit,
+        inverted: Boolean = true,
         paddingVertical: Dp = buttonPaddingVertical,
         paddingHorizontal: Dp = buttonPaddingHorizontal,
-        interactionSource: MutableInteractionSource? = null,
+        onClick: () -> Unit,
         content: @Composable () -> Unit
-    ) = CustomIconButton(
-        onClick = onClick,
-        containerColor = containerColor(context),
-        contentColor = contentColor(context),
-        content = content,
-        contentPadding = PaddingValues(paddingHorizontal, paddingVertical),
-        interactionSource = interactionSource
-    )
+    ) {
+        CustomIconButton(
+            onClick = onClick,
+            containerColor = if(inverted) button else containerColor(context),
+            contentColor = if(inverted) buttonText else contentColor(context),
+            containerColorHover = if(inverted) containerColor(context) else button,
+            contentColorHover = if(inverted) contentColor(context) else buttonText,
+            content = content,
+            contentPadding = PaddingValues(paddingHorizontal, paddingVertical),
+        )
+    }
 }
