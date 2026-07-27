@@ -51,6 +51,12 @@ fun App() {
             theme.Button(Context.QUOTE, onClick = { println("ERM") }) {
                 Text("Click me!")
             }
+            theme.PasswordField() {
+                println("password: $it")
+            }
+            theme.TextField() {
+                println("text: $it")
+            }
         }
     }
 }
