@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+//val theme = Theme(background = Color.Black, primary = Color.White)
 val theme = Theme()
 
 @Composable
@@ -51,11 +54,20 @@ fun App() {
             theme.Button(Context.QUOTE, onClick = { println("ERM") }) {
                 Text("Click me!")
             }
-            theme.PasswordField() {
+            theme.PasswordField(icon = { Icon(Icons.Default.Lock, "Password") }) {
                 println("password: $it")
+            }
+            theme.TextField(placeholder = "Placeholder...") {
+                println("text: $it")
+                true
             }
             theme.TextField() {
                 println("text: $it")
+                true
+            }
+            theme.TextField(Context.SECONDARY, icon = { Icon(Icons.Default.Settings, "Erm") }) {
+                println("text: $it")
+                false
             }
         }
     }

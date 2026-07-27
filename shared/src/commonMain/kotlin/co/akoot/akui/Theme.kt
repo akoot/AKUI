@@ -7,8 +7,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,18 +20,28 @@ import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextFieldLabelPosition
+import androidx.compose.material3.TextFieldLabelScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -36,6 +50,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +59,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 data class Theme(
-    val background: Color =          Color.White,
+    val background: Color =          Color(0xFFFFFFFF),
     val backgroundSecondary: Color = Color(0xFFA8A8A8),
     val backgroundTertiary: Color =  Color(0xFFEAEAEA),
     val primary: Color =             Color(0xFF000000),
@@ -55,9 +71,9 @@ data class Theme(
     val warning: Color =             Color(0xFFFFB700),
     val warningSecondary: Color =    Color(0xFFFF7700),
     val warningTertiary: Color =     Color(0xFFFFDB5B),
-    val quote: Color =             Color(0xFFA8A8A8),
-    val quoteSecondary: Color =    Color(0xFFA8A8A8),
-    val quoteTertiary: Color =     Color(0xFFA8A8A8),
+    val quote: Color =               Color(0xFFA8A8A8),
+    val quoteSecondary: Color =      Color(0xFFA8A8A8),
+    val quoteTertiary: Color =       Color(0xFFA8A8A8),
     val success: Color =             Color(0xFF49D500),
     val successSecondary: Color =    Color(0xFF49D500),
     val successTertiary: Color =     Color(0xFF49D500),
@@ -69,20 +85,20 @@ data class Theme(
     val buttonTertiary: Color =      tertiary,
     val buttonError: Color =         error,
     val buttonWarning: Color =       warning,
-    val buttonQuote: Color =       quote,
+    val buttonQuote: Color =         quote,
     val buttonSuccess: Color =       success,
-    val buttonText: Color =          Color(0xFFFFFFFF),
-    val buttonSecondaryText: Color = Color(0xFFFFFFFF),
-    val buttonTertiaryText: Color =  Color(0xFF000000),
-    val buttonErrorText: Color =     Color(0xFFFFFFFF),
-    val buttonQuoteText: Color =     Color(0xFFFFFFFF),
-    val buttonSuccessText: Color =     Color(0xFFFFFFFF),
+    val buttonText: Color =          background,
+    val buttonSecondaryText: Color = background,
+    val buttonTertiaryText: Color =  primary,
+    val buttonErrorText: Color =     background,
+    val buttonQuoteText: Color =     background,
+    val buttonSuccessText: Color =   background,
     val buttonWarningText: Color =   primary,
     val buttonPaddingVertical: Dp = 12.dp,
     val buttonPaddingHorizontal: Dp = 24.dp,
     val buttonMaxElevation: Double = 4.0,
     val buttonCornerRadius: Dp = 24.dp,
-    val textFieldCornerRadius: Dp = 24.dp,
+    val textFieldCornerRadius: Dp = 32.dp,
 ) {
     fun containerColor(context: Context): Color = when(context) {
         Context.PRIMARY -> button
@@ -131,7 +147,7 @@ data class Theme(
         )
         androidx.compose.material3.Button(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
             shape = RoundedCornerShape(corner),
             colors = ButtonColors(
                 containerColor = containerColor,
@@ -165,7 +181,6 @@ data class Theme(
         contentColorHover: Color = buttonText,
         disabledContainerColor: Color = button.copy(0.5f),
         disabledContentColor: Color = buttonText.copy(0.5f),
-        contentPadding: PaddingValues = PaddingValues(buttonPaddingHorizontal, buttonPaddingVertical),
         rotate: Boolean = true,
         content:  @Composable () -> Unit
     ) {
@@ -183,9 +198,8 @@ data class Theme(
         androidx.compose.material3.IconButton(
         onClick = onClick,
         modifier = modifier
-            .padding(contentPadding)
-            .rotate(rotation)
-            ,
+            .pointerHoverIcon(PointerIcon.Hand)
+            .rotate(rotation),
         shape = RoundedCornerShape(corner),
         colors = IconButtonColors(
             containerColor = containerColor,
@@ -224,8 +238,6 @@ data class Theme(
     fun IconButton(
         context: Context = Context.PRIMARY,
         inverted: Boolean = true,
-        paddingVertical: Dp = buttonPaddingVertical,
-        paddingHorizontal: Dp = buttonPaddingHorizontal,
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
         content: @Composable () -> Unit
@@ -237,20 +249,7 @@ data class Theme(
             containerColorHover = if(inverted) containerColor(context) else button,
             contentColorHover = if(inverted) contentColor(context) else buttonText,
             content = content,
-            contentPadding = PaddingValues(paddingHorizontal, paddingVertical),
             modifier = modifier
-        )
-    }
-
-    @Composable
-    fun CustomTextField(
-        text: String = "",
-        modifier: Modifier = Modifier,
-        submit: () -> Unit
-    ) {
-        val state = rememberTextFieldState(text)
-        androidx.compose.material3.TextField(
-            state = state
         )
     }
 
@@ -264,41 +263,60 @@ data class Theme(
         borderColor: Color = primary.copy(0.3f),
         roundedCorners: Dp = textFieldCornerRadius,
         borderStrokeWidth: Dp = 1.dp,
-        paddingVertical: Dp = 12.dp,
-        paddingHorizontal: Dp = 12.dp,
+        paddingHorizontal: Dp = 8.dp,
         textAlign: TextAlign = TextAlign.Center,
         onType: (Key) -> Boolean = { true },
+        icon: @Composable (() -> Unit)? = null,
         modifier: Modifier = Modifier,
         submit: (CharSequence) -> Unit
     ) {
-        val state = rememberTextFieldState(text)
-        BasicSecureTextField(
-            state = state,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-            onKeyboardAction = { submit(state.text) },
-            textObfuscationMode =
-                if (showPassword) {
-                    TextObfuscationMode.Visible
-                } else {
-                    TextObfuscationMode.RevealLastTyped
-                },
-            textStyle = TextStyle(
-                color = textColor,
-                textAlign = textAlign
-            ),
-            cursorBrush = SolidColor(cursorColor),
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
                 .background(backgroundColor, RoundedCornerShape(roundedCorners))
                 .border(borderStrokeWidth, borderColor, RoundedCornerShape(roundedCorners))
-                .padding(paddingHorizontal, paddingVertical)
-                .onKeyEvent { event ->
-                    if (event.type == KeyEventType.KeyDown) {
-                        onType(event.key)
+        ) {
+            val state = rememberTextFieldState(text)
+            icon?.let {
+                Spacer(Modifier.padding(paddingHorizontal))
+                it.invoke()
+                Spacer(Modifier.padding(paddingHorizontal.div(2)))
+            } ?: Spacer(Modifier.padding(paddingHorizontal))
+            BasicSecureTextField(
+                state = state,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                onKeyboardAction = { submit(state.text) },
+                textObfuscationMode =
+                    if (showPassword) {
+                        TextObfuscationMode.Visible
                     } else {
-                        true
+                        TextObfuscationMode.RevealLastTyped
+                    },
+                textStyle = TextStyle(
+                    color = textColor,
+                    textAlign = textAlign
+                ),
+                cursorBrush = SolidColor(cursorColor),
+                modifier = modifier
+                    .onKeyEvent { event ->
+                        if (event.type == KeyEventType.KeyDown) {
+                            onType(event.key)
+                        } else {
+                            true
+                        }
                     }
-                }
-        )
+            )
+            Spacer(Modifier.padding(paddingHorizontal.div(2)))
+            IconButton(
+                Context.ERROR,
+                onClick = { state.clearText() },
+                modifier = Modifier.alpha(if(state.text.isNotEmpty()) 1f else 0f)
+            ) {
+                Icon(Icons.Default.Clear, "Clear")
+            }
+        }
+
     }
 
     @Composable
@@ -310,51 +328,82 @@ data class Theme(
         selectionColor: Color = primary,
         borderColor: Color = primary.copy(0.3f),
         roundedCorners: Dp = textFieldCornerRadius,
-        borderStrokeWidth: Dp = 1.dp,
-        paddingVertical: Dp = 12.dp,
-        paddingHorizontal: Dp = 12.dp,
-        textAlign: TextAlign = TextAlign.Center,
+        borderStrokeWidth: Dp = Dp.Hairline,
+        paddingHorizontal: Dp = 8.dp,
+        textAlign: TextAlign = TextAlign.Left,
         onType: (Key) -> Boolean = { true },
         lineLimits: TextFieldLineLimits = TextFieldLineLimits.SingleLine,
+        labelPosition: TextFieldLabelPosition = TextFieldLabelPosition.Attached(),
+        label: String? = null,
+        placeholder: String? = null,
+        prefix: String? = null,
+        suffix: String? = null,
+        supportingText: String? = null,
+        icon: @Composable (() -> Unit)? = null,
         modifier: Modifier = Modifier,
-        submit: (CharSequence) -> Unit
+        submit: (CharSequence) -> Boolean
     ) {
-        val state = rememberTextFieldState(text)
-        TextField(
-            enabled = true,
-            state = state,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-            onKeyboardAction = { submit(state.text) },
-            textStyle = TextStyle(
-                color = textColor,
-                textAlign = textAlign
-            ),
-            lineLimits = lineLimits,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                focusedLabelColor = backgroundColor.copy(0.75f),
-                unfocusedLabelColor = backgroundColor.copy(0.5f),
-                cursorColor = cursorColor,
-                focusedIndicatorColor = backgroundColor,
-                selectionColors = TextSelectionColors(
-                    selectionColor,
-                    selectionColor
-                )
-            ),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = modifier
                 .background(backgroundColor, RoundedCornerShape(roundedCorners))
                 .border(borderStrokeWidth, borderColor, RoundedCornerShape(roundedCorners))
-                .padding(paddingHorizontal, paddingVertical)
-                .onKeyEvent { event ->
-                    if (event.type == KeyEventType.KeyDown) {
-                        onType(event.key)
-                    } else {
-                        true
+        ) {
+            val state = rememberTextFieldState(text)
+            icon?.let {
+                Spacer(Modifier.padding(paddingHorizontal))
+                it.invoke()
+                Spacer(Modifier.padding(paddingHorizontal.div(2)))
+            } ?: Spacer(Modifier.padding(paddingHorizontal))
+            TextField(
+                labelPosition = labelPosition,
+                label = label?.let { { Text(it, color = textColor) } },
+                placeholder = placeholder?.let { { Text(it, color = textColor) } },
+                prefix = prefix?.let { { Text(it, color = textColor) } },
+                suffix = suffix?.let { { Text(it, color = textColor) } },
+                supportingText = supportingText?.let { { Text(it, color = textColor.copy(0.5f)) } },
+                enabled = true,
+                state = state,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                onKeyboardAction = { if(submit(state.text)) state.clearText() },
+                textStyle = TextStyle(
+                    color = textColor,
+                    textAlign = textAlign
+                ),
+                lineLimits = lineLimits,
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedLabelColor = backgroundColor.copy(0.75f),
+                    unfocusedLabelColor = backgroundColor.copy(0.5f),
+                    cursorColor = cursorColor,
+                    selectionColors = TextSelectionColors(
+                        selectionColor,
+                        selectionColor
+                    ),
+                ),
+                contentPadding = PaddingValues.Zero,
+                modifier = Modifier
+                    .onKeyEvent { event ->
+                        if (event.type == KeyEventType.KeyDown) {
+                            onType(event.key)
+                        } else {
+                            true
+                        }
                     }
-                }
-        )
+            )
+            Spacer(Modifier.padding(paddingHorizontal.div(2)))
+            IconButton(
+                Context.ERROR,
+                onClick = { state.clearText() },
+                modifier = Modifier.alpha(if(state.text.isNotEmpty()) 1f else 0f)
+            ) {
+                Icon(Icons.Default.Clear, "Clear")
+            }
+        }
     }
 
     @Composable
@@ -365,6 +414,7 @@ data class Theme(
         onType: (Key) -> Boolean = { true },
         text: String = "",
         modifier: Modifier = Modifier,
+        icon: @Composable (() -> Unit)? = null,
         submit: (CharSequence) -> Unit
     ) = CustomPasswordField(
         text = text,
@@ -372,28 +422,45 @@ data class Theme(
         textAlign = textAlign,
         showPassword = showPassword,
         submit = submit,
-        textColor = contentColor(context),
-        cursorColor = contentColor(context),
+        backgroundColor = background,
+        textColor = primary,
+        cursorColor = containerColor(context),
         borderColor = containerColor(context),
-        modifier = modifier
+        modifier = modifier,
+        icon = icon
     )
 
     @Composable
     fun TextField(
         context: Context = Context.PRIMARY,
-        textAlign: TextAlign = TextAlign.Center,
+        textAlign: TextAlign = TextAlign.Left,
         onType: (Key) -> Boolean = { true },
         text: String = "",
+        label: String? = null,
+        placeholder: String? = null,
+        icon: @Composable (() -> Unit)? = null,
+        prefix: String? = null,
+        suffix: String? = null,
+        supportingText: String? = null,
         modifier: Modifier = Modifier,
-        submit: (CharSequence) -> Unit
+        submit: (CharSequence) -> Boolean
     ) = CustomTextField(
         text = text,
         onType = onType,
         textAlign = textAlign,
         submit = submit,
-        textColor = contentColor(context),
-        cursorColor = contentColor(context),
+        backgroundColor = background,
+        textColor = primary,
+        cursorColor = containerColor(context),
         borderColor = containerColor(context),
-        modifier = modifier
+        selectionColor = containerColor(context).copy(0.25f),
+        modifier = modifier,
+        label = label,
+        placeholder = placeholder,
+        prefix = prefix,
+        suffix = suffix,
+        supportingText = supportingText,
+        borderStrokeWidth = 0.dp,
+        icon = icon,
     )
 }
