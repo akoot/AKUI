@@ -7,50 +7,48 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 
 
 @Composable
 fun App(theme: Theme) {
-    Column(
-        modifier = Modifier
-            .background(theme.background)
-            .safeContentPadding()
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(Modifier.padding(12.dp))
-        theme.PasswordField(icon = { Icon(Icons.Default.Lock, "Password", tint = theme.primary) }) {
-            println("password: $it")
+    theme.apply {
+        Column(
+            modifier = Modifier
+                .background(theme.background)
+                .safeContentPadding()
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(12.dp)
+            PasswordField(icon = { Icon(Icons.Default.Lock) }) {
+                println("password: $it")
+            }
+            Spacer(12.dp)
+            TextField(placeholder = "Placeholder...") {
+                println("text: $it")
+                true
+            }
+            Spacer(12.dp)
+            TextField() {
+                println("text: $it")
+                true
+            }
+            Spacer(Modifier.padding(12.dp))
+            TextField(Context.SECONDARY, icon = { Icon(Icons.Default.Settings) }) {
+                println("text: $it")
+                false
+            }
+            Spacer(12.dp)
+            Button("Click") {
+                println("click")
+            }
         }
-        Spacer(Modifier.padding(12.dp))
-        theme.TextField(placeholder = "Placeholder...") {
-            println("text: $it")
-            true
-        }
-        Spacer(Modifier.padding(12.dp))
-        theme.TextField() {
-            println("text: $it")
-            true
-        }
-        Spacer(Modifier.padding(12.dp))
-        theme.TextField(Context.SECONDARY, icon = { Icon(Icons.Default.Settings, "Erm", tint = theme.primary) }) {
-            println("text: $it")
-            false
-        }
-        Spacer(Modifier.padding(12.dp))
     }
 }

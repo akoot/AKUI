@@ -8,8 +8,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -28,6 +26,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Remove
@@ -40,7 +39,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldLabelPosition
-import androidx.compose.material3.TextFieldLabelScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -201,7 +199,7 @@ data class Theme(
             targetValue = if (hover) contentColorHover else contentColor,
         )
         val rotation by animateFloatAsState(
-            targetValue = if (rotate && hover) 360f else 0f,
+            targetValue = if (rotate && hover) 180f else 0f,
         )
         androidx.compose.material3.IconButton(
         onClick = onClick,
@@ -243,11 +241,23 @@ data class Theme(
     )
 
     @Composable
+    fun Button(
+        text: String,
+        context: Context = Context.PRIMARY,
+        inverted: Boolean = true,
+        modifier: Modifier = Modifier,
+        onClick: () -> Unit
+    ) = Button(context, inverted, onClick = onClick, modifier = modifier) {
+        Text(text, color = if(inverted) contentColor(context) else buttonText)
+    }
+
+    @Composable
     fun IconButton(
         context: Context = Context.PRIMARY,
         inverted: Boolean = true,
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
+        rotate: Boolean = true,
         content: @Composable () -> Unit
     ) {
         CustomIconButton(
@@ -257,6 +267,7 @@ data class Theme(
             containerColorHover = if(inverted) containerColor(context) else button,
             contentColorHover = if(inverted) contentColor(context) else buttonText,
             content = content,
+            rotate = rotate,
             modifier = modifier
         )
     }
@@ -318,10 +329,11 @@ data class Theme(
             Spacer(Modifier.padding(paddingHorizontal.div(2)))
             IconButton(
                 Context.ERROR,
+                rotate = false,
                 onClick = { state.clearText() },
                 modifier = Modifier.alpha(if(state.text.isNotEmpty()) 1f else 0f)
             ) {
-                Icon(Icons.Default.Clear, "Clear")
+                Icon(Icons.Default.Delete, "Clear", tint = contentColor(Context.ERROR))
             }
         }
 
@@ -406,10 +418,11 @@ data class Theme(
             Spacer(Modifier.padding(paddingHorizontal.div(2)))
             IconButton(
                 Context.ERROR,
+                rotate = false,
                 onClick = { state.clearText() },
-                modifier = Modifier.alpha(if(state.text.isNotEmpty()) 1f else 0f)
+                modifier = Modifier.alpha(if(state.text.isNotEmpty()) 1f else 0f),
             ) {
-                Icon(Icons.Default.Clear, "Clear")
+                Icon(Icons.Default.Delete, "Clear", tint = contentColor(Context.ERROR))
             }
         }
     }
@@ -539,10 +552,11 @@ data class Theme(
     fun TopBarButton(
         icon: ImageVector,
         background: Color = Color.Transparent,
-        foreground: Color = Color.White,
+        foreground: Color = this.background,
         backgroundHover: Color = background,
         foregroundHover: Color = foreground,
         description: String = "",
+        modifier: Modifier = Modifier,
         onClick: () -> Unit
     ) {
         val interactionSource = remember { MutableInteractionSource() }
@@ -560,7 +574,7 @@ data class Theme(
         androidx.compose.material3.IconButton(
             onClick = onClick,
             interactionSource = interactionSource,
-            modifier = Modifier
+            modifier = modifier.pointerHoverIcon(PointerIcon.Hand)
         ) {
             Icon(
                 imageVector = icon,
@@ -573,5 +587,8 @@ data class Theme(
             )
         }
     }
+
+    @Composable
+    fun Spacer(size: Dp, modifier: Modifier = Modifier) = Spacer(modifier.padding(size))
 }
 
