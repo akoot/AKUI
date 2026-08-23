@@ -21,6 +21,7 @@ kotlin {
             implementation(libs.config)
             implementation(libs.gson)
             implementation(libs.androidx.material.icons.core)
+            implementation(libs.androidx.material.icons.extended)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

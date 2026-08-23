@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -26,6 +28,9 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -45,6 +50,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -57,6 +63,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowState
 
 data class Theme(
     val background: Color =          Color(0xFFFFFFFF),
@@ -463,4 +471,107 @@ data class Theme(
         borderStrokeWidth = 0.dp,
         icon = icon,
     )
+
+    @Composable
+    fun Icon(
+        icon: ImageVector,
+        description: String = "",
+        modifier: Modifier = Modifier,
+        tint: Color = primary
+    ) = androidx.compose.material3.Icon(icon, description, modifier, tint)
+
+    @Composable
+    fun TopBar(
+        state: WindowState,
+        title: String,
+        arrangement: Arrangement.Horizontal = Arrangement.End,
+        modifier: Modifier = Modifier,
+        onClose: () -> Unit = {}
+    ) {
+        val onToggleMaximize = {
+            state.placement =
+                if (state.placement == WindowPlacement.Maximized) {
+                    WindowPlacement.Floating
+                } else {
+                    WindowPlacement.Maximized
+                }
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .fillMaxWidth()
+        ) {
+            Text(
+                "[ $title ]",
+                color = primary,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = arrangement
+            ) {
+                TopBarButton(
+                    Icons.Default.Remove,
+                    foreground = primary,
+                    backgroundHover = primary,
+                    foregroundHover = background,
+                    onClick = { state.isMinimized = true }
+                )
+                TopBarButton(
+                    if (state.placement == WindowPlacement.Floating) Icons.Default.Fullscreen else Icons.Default.FullscreenExit,
+                    foreground = primary,
+                    backgroundHover = primary,
+                    foregroundHover = background,
+                    onClick = onToggleMaximize
+                )
+                TopBarButton(
+                    Icons.Default.Close,
+                    foreground = primary,
+                    backgroundHover = Color.Red,
+                    onClick = onClose
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun TopBarButton(
+        icon: ImageVector,
+        background: Color = Color.Transparent,
+        foreground: Color = Color.White,
+        backgroundHover: Color = background,
+        foregroundHover: Color = foreground,
+        description: String = "",
+        onClick: () -> Unit
+    ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val hover by interactionSource.collectIsHoveredAsState()
+        val bg by animateColorAsState(
+            targetValue = if (hover) backgroundHover else background,
+        )
+        val fg by animateColorAsState(
+            targetValue = if (hover) foregroundHover else foreground,
+        )
+        val rotation by animateFloatAsState(
+            targetValue = if (hover) 180f else 0f,
+        )
+
+        androidx.compose.material3.IconButton(
+            onClick = onClick,
+            interactionSource = interactionSource,
+            modifier = Modifier
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = description,
+                tint = fg,
+                modifier = Modifier
+                    .background(bg, CircleShape)
+                    .padding(4.dp)
+                    .rotate(rotation)
+            )
+        }
+    }
 }
+
