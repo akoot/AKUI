@@ -2,7 +2,9 @@ package co.akoot.akui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -32,43 +34,26 @@ fun App() {
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            theme.Button(onClick = { println("ERM") }) {
-                Text("Click me!")
-            }
-            theme.Button(Context.SECONDARY, onClick = { println("ERM") }) {
-                Text("Click me!")
-            }
-            theme.Button(Context.TERTIARY, onClick = { println("ERM") }) {
-                Text("Click me!")
-            }
-            theme.Button(Context.WARNING, onClick = { println("ERM") }) {
-                Text("Click me!")
-                Icon(Icons.Default.Close, "Click me!")
-            }
-            theme.IconButton(Context.ERROR, onClick = { println("ERM") }) {
-                Icon(Icons.Default.Close, "Click me!")
-            }
-            theme.Button(Context.SUCCESS, onClick = { println("ERM") }) {
-                Text("Click me!")
-            }
-            theme.Button(Context.QUOTE, onClick = { println("ERM") }) {
-                Text("Click me!")
-            }
+            Spacer(Modifier.padding(12.dp))
             theme.PasswordField(icon = { Icon(Icons.Default.Lock, "Password") }) {
                 println("password: $it")
             }
+            Spacer(Modifier.padding(12.dp))
             theme.TextField(placeholder = "Placeholder...") {
                 println("text: $it")
                 true
             }
+            Spacer(Modifier.padding(12.dp))
             theme.TextField() {
                 println("text: $it")
                 true
             }
+            Spacer(Modifier.padding(12.dp))
             theme.TextField(Context.SECONDARY, icon = { Icon(Icons.Default.Settings, "Erm") }) {
                 println("text: $it")
                 false
             }
+            Spacer(Modifier.padding(12.dp))
         }
     }
 }
